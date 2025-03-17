@@ -1,6 +1,6 @@
 <?php 
-require_once('app/config/database.php'); 
-require_once('app/models/AuthModel.php'); 
+require_once 'app/config/database.php'; 
+require_once __DIR__ . '/../models/AuthModel.php'; 
 
 class AuthController 
 { 
@@ -9,7 +9,10 @@ class AuthController
 
     public function __construct() 
     { 
-        session_start(); 
+        // Chỉ gọi session_start() nếu chưa có session
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start(); 
+        }
         $this->db = (new Database())->getConnection(); 
         $this->model = new AuthModel($this->db); 
     } 
@@ -18,54 +21,57 @@ class AuthController
     public function register() 
     { 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') { 
-            $username = $_POST['username']; 
-            $password = $_POST['password']; 
-            $email    = $_POST['email']; 
+            // Lấy MSSV thay vì username
+            $mssv = trim($_POST['mssv'] ?? '');
+            $password = trim($_POST['password'] ?? '');
+            $email = trim($_POST['email'] ?? '');
 
-            // Mã hóa password (ví dụ MD5) 
-            $hashPass = md5($password); 
-
-            $data = [ 
-                'username' => $username, 
-                'password' => $hashPass, 
-                'email'    => $email 
-            ]; 
-            $this->model->registerUser($data); 
-            // Chuyển sang đăng nhập 
-            header("Location: ?controller=auth&action=login"); 
-            exit(); 
+            // Kiểm tra dữ liệu đầu vào (bạn có thể mở rộng kiểm tra thêm)
+            if (empty($mssv) || empty($password) || empty($email)) {
+                $error = "Vui lòng nhập đầy đủ thông tin!";
+            } else {
+                // Mã hóa password (ví dụ MD5 - nhưng nên dùng bcrypt hoặc password_hash() trong thực tế)
+                $hashPass = md5($password); 
+                $data = [ 
+                    'mssv'     => $mssv, 
+                    'password' => $hashPass, 
+                    'email'    => $email 
+                ]; 
+                // Đăng ký user
+                if ($this->model->registerUser($data)) {
+                    // Chuyển sang trang đăng nhập
+                    header("Location: ?controller=auth&action=login"); 
+                    exit(); 
+                } else {
+                    $error = "Lỗi khi đăng ký. Vui lòng thử lại.";
+                }
+            }
         } 
-
         include 'app/views/auth/register.php'; 
     } 
 
     // Trang đăng nhập 
-    public function login() 
-    { 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') { 
-            $username = $_POST['username']; 
-            $password = $_POST['password']; 
-            $hashPass = md5($password); 
-
-            $user = $this->model->getUserByUsername($username); 
-            if ($user && $user['password'] == $hashPass) { 
-                // Đăng nhập thành công 
-                $_SESSION['username'] = $username; 
-                header("Location: ?controller=default&action=index"); 
-                exit(); 
-            } else { 
-                $error = "Sai username hoặc password!"; 
-            } 
-        } 
-
-        include 'app/views/auth/login.php'; 
-    } 
+    public function login() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $mssv = trim($_POST['mssv'] ?? '');
+            $password = trim($_POST['password'] ?? '');
+            $user = $this->model->getUserByMSSV($mssv);
+            if ($user && $user['password'] == md5($password)) {
+                $_SESSION['mssv'] = $mssv;  // Lưu MSSV vào session
+                header("Location: ?controller=default&action=index");
+                exit();
+            } else {
+                $error = "Sai MSSV hoặc mật khẩu!";
+            }
+        }
+        require 'app/views/auth/login.php';
+    }
 
     // Đăng xuất 
     public function logout() 
     { 
         session_destroy(); 
-        header("Location: ?controller=auth&action=login"); 
+        header("Location: ?controller=auth&action=login");
     } 
-} 
+}
 ?>

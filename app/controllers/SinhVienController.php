@@ -9,7 +9,6 @@ class SinhVienController {
     private $db;
 
     public function __construct() {
-        session_start();
         $this->db = (new Database())->getConnection();
         $this->model = new SinhVienModel($this->db);
         $this->nganhHocModel = new NganhHocModel($this->db);

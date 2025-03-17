@@ -1,52 +1,73 @@
 <?php
-
-class HocPhanModel
-{
+class HocPhanModel {
     private $conn;
-    private $table = 'HocPhan';
+    private $table = "HocPhan";
 
-    public function __construct($db)
-    {
+    public function __construct($db) {
         $this->conn = $db;
     }
-
-    public function insert($MaHP, $TenHP, $SoTinChi, $SoLuong)
+    public function decrementSoLuong($MaHP)
     {
-        $sql = "INSERT INTO {$this->table} (MaHP, TenHP, SoTinChi, SoLuong) VALUES (?, ?, ?, ?)";
-        $stmt = $this->conn->prepare($sql);
+        $query = "UPDATE {$this->table} SET SoLuong = SoLuong - 1 WHERE MaHP = :MaHP";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':MaHP', $MaHP, PDO::PARAM_STR);
+        return $stmt->execute();
+    }
+    
+    // Thêm học phần (giữ lại phương thức này vì dễ mở rộng)
+    public function insert($data) {
+        $query = "INSERT INTO {$this->table} (MaHP, TenHP, SoTinChi, SoLuong)
+                  VALUES (:MaHP, :TenHP, :SoTinChi, :SoLuong)";
+        $stmt = $this->conn->prepare($query);
+        
+        // Bind parameters
+        $stmt->bindParam(':MaHP', $data['MaHP'], PDO::PARAM_STR);
+        $stmt->bindParam(':TenHP', $data['TenHP'], PDO::PARAM_STR);
+        $stmt->bindParam(':SoTinChi', $data['SoTinChi'], PDO::PARAM_INT);
+        $stmt->bindParam(':SoLuong', $data['SoLuong'], PDO::PARAM_INT);
 
-        // Truyền mảng tham số vào execute
-        return $stmt->execute([$MaHP, $TenHP, $SoTinChi, $SoLuong]);
+        return $stmt->execute();
     }
 
-    public function delete($MaHP)
-    {
-        $sql = "DELETE FROM {$this->table} WHERE MaHP = ?";
-        $stmt = $this->conn->prepare($sql);
-        return $stmt->execute([$MaHP]);
+    // Xóa học phần
+    public function delete($MaHP) {
+        $query = "DELETE FROM {$this->table} WHERE MaHP = :MaHP";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':MaHP', $MaHP, PDO::PARAM_STR);
+        return $stmt->execute();
     }
 
-    public function getAll()
-    {
-        $sql = "SELECT MaHP, TenHP, SoTinChi, SoLuong FROM {$this->table}";
-        $stmt = $this->conn->prepare($sql);
+    // Lấy danh sách học phần
+    public function getAll() {
+        $query = "SELECT MaHP, TenHP, SoTinChi, SoLuong FROM {$this->table}";
+        $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getByMaHP($MaHP)
-    {
-        $sql = "SELECT * FROM {$this->table} WHERE MaHP = ?";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute([$MaHP]);
+    // Lấy thông tin học phần theo MaHP
+    public function getByMaHP($MaHP) {
+        $query = "SELECT * FROM {$this->table} WHERE MaHP = :MaHP";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':MaHP', $MaHP, PDO::PARAM_STR);
+        $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function update($MaHP, $TenHP, $SoTinChi, $SoLuong)
-    {
-        $sql = "UPDATE {$this->table} SET TenHP = ?, SoTinChi = ?, SoLuong = ? WHERE MaHP = ?";
-        $stmt = $this->conn->prepare($sql);
-        return $stmt->execute([$TenHP, $SoTinChi, $SoLuong, $MaHP]);
+    // Cập nhật học phần
+    public function update($data) {
+        $query = "UPDATE {$this->table} 
+                  SET TenHP = :TenHP, SoTinChi = :SoTinChi, SoLuong = :SoLuong 
+                  WHERE MaHP = :MaHP";
+        $stmt = $this->conn->prepare($query);
+        
+        // Bind parameters
+        $stmt->bindParam(':TenHP', $data['TenHP'], PDO::PARAM_STR);
+        $stmt->bindParam(':SoTinChi', $data['SoTinChi'], PDO::PARAM_INT);
+        $stmt->bindParam(':SoLuong', $data['SoLuong'], PDO::PARAM_INT);
+        $stmt->bindParam(':MaHP', $data['MaHP'], PDO::PARAM_STR);
+
+        return $stmt->execute();
     }
 }
 ?>

@@ -1,25 +1,30 @@
 <?php
-
-require_once 'app/config/database.php';
-
 class AuthModel {
     private $conn;
-    public function __construct() {
-        $this->conn = Database::getConnection();
+    private $table_name = "Users";
+
+    public function __construct($db) {
+        $this->conn = $db;
     }
 
-    // Đăng ký tài khoản
+    // Đăng ký user sử dụng MSSV, password và email
     public function registerUser($data) {
-        $sql = "INSERT INTO Users (username, password, email) 
-                VALUES (:username, :password, :email)";
-        $stmt = $this->conn->prepare($sql);
-        return $stmt->execute($data);
+        $query = "INSERT INTO " . $this->table_name . " (mssv, password, email) 
+                  VALUES (:mssv, :password, :email)";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':mssv', $data['mssv']);
+        $stmt->bindParam(':password', $data['password']);
+        $stmt->bindParam(':email', $data['email']);
+        return $stmt->execute();
     }
 
-    // Tìm user theo username
-    public function getUserByUsername($username) {
-        $stmt = $this->conn->prepare("SELECT * FROM Users WHERE username=?");
-        $stmt->execute([$username]);
-        return $stmt->fetch();
+    // Lấy thông tin user theo MSSV
+    public function getUserByMSSV($mssv) {
+        $query = "SELECT * FROM " . $this->table_name . " WHERE mssv = :mssv LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':mssv', $mssv);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }
+?>

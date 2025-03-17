@@ -9,7 +9,12 @@
 <body>
 <div class="container mt-5">
     <h2 class="text-center">Danh sách Học phần</h2>
+
+    <!-- Nút chuyển hướng đến trang đăng ký học phần -->
+    <a href="?controller=hocphan&action=register" class="btn btn-primary mb-3">Đăng ký học phần</a>
+    
     <a href="?controller=hocphan&action=create" class="btn btn-success mb-3">Thêm học phần</a>
+    
     <table class="table table-bordered">
         <thead>
             <tr>
