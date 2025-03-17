@@ -18,10 +18,10 @@
         <td><?= htmlspecialchars($sv['GioiTinh']) ?></td>
         <td><?= htmlspecialchars($sv['NgaySinh']) ?></td>
         <td>
-            <?php if(!empty($sv['Hinh'])): ?>
-                <img src="<?= htmlspecialchars($sv['Hinh']) ?>" alt="Hình của <?= htmlspecialchars($sv['HoTen']) ?>" width="80">
+            <?php if (!empty($sv['Hinh'])): ?>
+                <img src="<?= $sv['Hinh'] ?>" alt="Hình ảnh sinh viên" style="width: 100px; height: auto;">
             <?php else: ?>
-                <span>Không có hình</span>
+                <p>Không có hình ảnh</p>
             <?php endif; ?>
         </td>
         <td><?= htmlspecialchars($sv['MaNganh']) ?></td>

@@ -5,10 +5,10 @@
 <p><strong>Giới tính:</strong> <?= htmlspecialchars($student['GioiTinh']) ?></p>
 <p><strong>Ngày sinh:</strong> <?= htmlspecialchars($student['NgaySinh']) ?></p>
 <p><strong>Hình ảnh:</strong><br>
-    <?php if (!empty($student['Hinh'])): ?>
-        <img src="<?= htmlspecialchars($student['Hinh']) ?>" alt="Hình của <?= htmlspecialchars($student['HoTen']) ?>" width="200">
+<?php if (!empty($student['Hinh'])): ?>
+        <img src="<?= $student['Hinh'] ?>" alt="Hình ảnh sinh viên" style="width: 150px; height: auto;">
     <?php else: ?>
-        <span>Không có hình</span>
+        <p>Không có hình ảnh</p>
     <?php endif; ?>
 </p>
 <p><strong>Mã ngành:</strong> <?= htmlspecialchars($student['MaNganh']) ?></p>

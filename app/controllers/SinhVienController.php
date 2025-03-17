@@ -36,17 +36,17 @@ class SinhVienController {
             $GioiTinh = trim($_POST['GioiTinh'] ?? '');
             $NgaySinh = trim($_POST['NgaySinh'] ?? '');
             $MaNganh  = trim($_POST['MaNganh'] ?? '');
-
+    
             $errors = [];
             if (empty($MaSV)) $errors[] = "Mã SV không được để trống";
             if (empty($HoTen)) $errors[] = "Họ tên không được để trống";
             if (empty($MaNganh)) $errors[] = "Mã ngành không được để trống";
-
+    
             // Xử lý file upload nếu có
             $uploadedFilePath = '';
             if (isset($_FILES['Hinh']) && $_FILES['Hinh']['error'] == UPLOAD_ERR_OK) {
                 // Sử dụng đường dẫn tuyệt đối tới thư mục uploads ở gốc dự án
-                $uploadDir = __DIR__ . '/../../uploads/';
+                $uploadDir = __DIR__ . '/../../public/images/'; // Sửa đường dẫn
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0777, true);
                 }
@@ -55,43 +55,44 @@ class SinhVienController {
                 // Tạo tên file mới để tránh trùng lặp (kết hợp MaSV và timestamp)
                 $newFileName = $MaSV . '_' . time() . '_' . $fileName;
                 $destPath = $uploadDir . $newFileName;
-                
+    
                 if (move_uploaded_file($fileTmpPath, $destPath)) {
                     // Lưu đường dẫn file tương đối (với dấu "/" đầu tiên, từ gốc dự án)
-                    $uploadedFilePath = '/uploads/' . $newFileName;
+                    $uploadedFilePath = '/public/images/' . $newFileName;
                 } else {
                     $errors[] = "Có lỗi khi tải file lên!";
                 }
             }
-
+    
             // Kiểm tra mã ngành tồn tại (sử dụng phương thức getCategoryById của NganhHocModel)
             $nganh = $this->nganhHocModel->getCategoryById($MaNganh);
             if (!$nganh) {
                 $errors[] = "Mã ngành không tồn tại! Vui lòng nhập mã ngành hợp lệ (VD: CNTT, QTKD).";
             }
-
+    
             if (!empty($errors)) {
                 // Nếu có lỗi, lấy lại danh sách ngành và hiển thị form với thông báo lỗi
                 $nganhHocs = $this->nganhHocModel->getAll();
                 include 'app/views/sinhvien/create.php';
                 return;
             }
-
+    
             // Chuẩn bị dữ liệu để lưu
             $data = [
                 'MaSV'     => $MaSV,
                 'HoTen'    => $HoTen,
                 'GioiTinh' => $GioiTinh,
                 'NgaySinh' => $NgaySinh,
-                'Hinh'     => $uploadedFilePath,
+                'Hinh'     => $uploadedFilePath, // Lưu đường dẫn file
                 'MaNganh'  => $MaNganh
             ];
-
+    
             $this->model->insert($data);
             header("Location: ?controller=sinhvien&action=index");
             exit;
         }
     }
+    
 
     public function edit() {
         $MaSV = $_GET['MaSV'] ?? null;
